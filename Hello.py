@@ -169,6 +169,7 @@ if st.session_state['access_token']:
         if not st.session_state['access_token']:
             st.error("Access token is missing.")
         else:
+            st.write("Access Token (Before Initialization):", st.session_state['access_token'])
             yf_query = YahooFantasySportsQuery(
                 auth_dir=".",
                 league_id=league_id,
