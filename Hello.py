@@ -61,8 +61,6 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
         st.session_state['access_token'] = token_data.get('access_token', '')
         st.session_state['refresh_token'] = token_data.get('refresh_token', '')
         st.success('Access token received!')
-        st.write('Access token:', st.session_state['access_token'])
-        st.write('Refresh token:', st.session_state['refresh_token'])
         st.write('Full token response:', token_data)
     except requests.exceptions.HTTPError as err:
         st.error(f"HTTP error occurred: {err}")
@@ -108,7 +106,7 @@ if st.session_state['access_token']:
             yf_query = YahooFantasySportsQuery(
                 league_id=league_id,
                 auth_dir=temp_dir,
-                game_code="nfl",  # or whatever your game code is
+                game_code="nfl"
             )
             st.write("Completed intialization, setting token_time...")
             yf_query.oauth.token_time = time.time() - 3500
