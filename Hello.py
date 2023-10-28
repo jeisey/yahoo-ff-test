@@ -107,8 +107,6 @@ if st.session_state['access_token']:
                 league_id=league_id,
                 auth_dir=temp_dir,
                 game_code="nfl",  # or whatever your game code is
-                consumer_key=cid,
-                consumer_secret=cse
             )
 
             # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
