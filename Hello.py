@@ -87,7 +87,10 @@ if st.session_state['access_token']:
                 "refresh_token": st.session_state['refresh_token'],
                 "token_type": "bearer",
                 "expires_in": 3600,  # You might want to handle token expiry properly
-            }
+                "consumer_key": cid,
+                "consumer_secret": cse,
+                "guid": None,
+                }
             with open(token_file_path, 'w') as f:
                 json.dump(token_data, f)
 
