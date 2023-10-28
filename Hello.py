@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import os
+import time
 import tempfile
 from requests.auth import HTTPBasicAuth
 from yfpy.query import YahooFantasySportsQuery
@@ -103,11 +104,14 @@ if st.session_state['access_token']:
                 json.dump(private_data, f)
 
             # Initialize the YahooFantasySportsQuery
+            st.write("Initializing yf_query...")
             yf_query = YahooFantasySportsQuery(
                 league_id=league_id,
                 auth_dir=temp_dir,
                 game_code="nfl",  # or whatever your game code is
             )
+            st.write("Completed intialization, setting token_time...")
+            yf_query.oauth.token_time = time.time() - 3500
 
             # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
             # Example: Get league settings
