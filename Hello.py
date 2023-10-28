@@ -170,6 +170,7 @@ if st.session_state['access_token']:
             st.error("Access token is missing.")
         else:
             st.write("Access Token (Before Initialization):", st.session_state['access_token'])
+            st.write("Attempting to create YahooFantasySportsQuery object")
             yf_query = YahooFantasySportsQuery(
                 auth_dir=".",
                 league_id=league_id,
@@ -181,5 +182,6 @@ if st.session_state['access_token']:
 
         # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
         # Example: Get league settings
+        st.write("Attempting to create league_settings object...")
         league_settings = yf_query.get_league_settings()
         st.write("League Settings:", league_settings)
