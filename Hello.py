@@ -185,10 +185,10 @@ if 'yahoo_query_instance' not in st.session_state:
                     league_id=league_id,
                     unique_id=st.session_state['unique_id'],
                     access_token=st.session_state['access_token'],
-                    refresh_token=st.session_state.get('refresh_token'),
+                    refresh_token=st.session_state['refresh_token'],
                     consumer_key=cid,
                     consumer_secret=cse
-                )
+                    )
                 st.session_state['yahoo_query_instance'] = yf_query
             except ValueError as e:
                 st.error(f"Error initializing YahooFantasySportsQuery: {e}")
