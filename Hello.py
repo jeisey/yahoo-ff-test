@@ -78,8 +78,10 @@ if st.session_state['access_token']:
             # Define the path to the token file
             token_file_path = f"{temp_dir}/token.json"
 
-            # Create the token file
+            # Create the token file with all necessary details
             token_data = {
+                "consumer_key": cid,
+                "consumer_secret": cse,
                 "access_token": st.session_state['access_token'],
                 "refresh_token": st.session_state['refresh_token'],
                 "token_type": "bearer",
@@ -97,6 +99,10 @@ if st.session_state['access_token']:
                 consumer_secret=cse
             )
 
+            # Manually set the consumer_key and consumer_secret attributes
+            yf_query.oauth.consumer_key = cid
+            yf_query.oauth.consumer_secret = cse
+
             # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
             # Example: Get league settings
             league_settings = yf_query.get_league_settings()
@@ -104,3 +110,4 @@ if st.session_state['access_token']:
             st.write("Done, cleaning up now...")
             yf_query.cleanup()
             st.write("Done!")
+
