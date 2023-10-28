@@ -68,18 +68,20 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
 if st.session_state['access_token']:
     st.write("Now you can use the access token to interact with Yahoo's API.")
     
-    # Initialize the YahooFantasySportsQuery
-    league_id = "your_league_id"  # Replace with your Yahoo Fantasy Sports league ID
-    yf_query = YahooFantasySportsQuery(
-        auth_dir=".",  # Directory where token.json will be saved
-        league_id=league_id,
-        access_token=st.session_state['access_token'],
-        refresh_token=st.session_state['refresh_token'],
-        consumer_key=cid,
-        consumer_secret=cse
-    )
+    # Allow user to input league ID
+    league_id = st.text_input("Enter your Yahoo Fantasy Sports league ID:")
+    if league_id:
+        # Initialize the YahooFantasySportsQuery
+        yf_query = YahooFantasySportsQuery(
+            auth_dir=".",  # Placeholder value
+            league_id=league_id,
+            access_token=st.session_state['access_token'],
+            refresh_token=st.session_state['refresh_token'],
+            consumer_key=cid,
+            consumer_secret=cse
+        )
 
-    # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
-    # Example: Get league settings
-    league_settings = yf_query.get_league_settings()
-    st.write("League Settings:", league_settings)
+        # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
+        # Example: Get league settings
+        league_settings = yf_query.get_league_settings()
+        st.write("League Settings:", league_settings)
