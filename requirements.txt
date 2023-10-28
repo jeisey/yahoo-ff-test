@@ -3,4 +3,5 @@ numpy
 pandas
 pydeck
 streamlit
-git+https://github.com/jeisey/yfpy-st.git@main#egg=yfpy
+yfpy==13.0.0
+# git+https://github.com/jeisey/yfpy-st.git@main#egg=yfpy
