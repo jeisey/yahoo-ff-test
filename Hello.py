@@ -88,6 +88,7 @@
 
 import streamlit as st
 import requests
+import uuid
 from requests.auth import HTTPBasicAuth
 from yfpy.query import YahooFantasySportsQuery
 
@@ -98,6 +99,12 @@ from yfpy.query import YahooFantasySportsQuery
 cid = st.secrets["YAHOO_CLIENT_ID"]
 cse = st.secrets["YAHOO_CLIENT_SECRET"]
 
+def cleanup():
+    if 'yahoo_query_instance' in st.session_state:
+        st.session_state['yahoo_query_instance'].cleanup()
+        del st.session_state['yahoo_query_instance']
+
+
 # Ensure that the Client ID and Secret are set
 if cid is None or cse is None:
     st.error("Client ID or Client Secret is not set. Please set the YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET environment variables.")
@@ -106,6 +113,10 @@ if cid is None or cse is None:
 # URL for st button with Client ID in query string
 redirect_uri = "oob"  # Out of band
 auth_page = f'https://api.login.yahoo.com/oauth2/request_auth?client_id={cid}&redirect_uri={redirect_uri}&response_type=code'
+
+#Create unique sessions id
+if 'unique_id' not in st.session_state:
+    st.session_state['unique_id'] = str(uuid.uuid4())
 
 # Show ST Button to open Yahoo OAuth2 Page
 if 'auth_code' not in st.session_state:
@@ -152,36 +163,40 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
     except Exception as err:
         st.error(f"An error occurred: {err}")
 
-# Use the access token
-if st.session_state['access_token']:
-    st.write("Now you can use the access token to interact with Yahoo's API.")
-    
-    # Allow user to input league ID
-    league_id = st.text_input("Enter your Yahoo Fantasy Sports league ID:")
-    if league_id:
-        # Debugging print statements
-        st.write("Debugging Info:")
-        st.write("Access Token:", st.session_state['access_token'])
-        st.write("Refresh Token:", st.session_state['refresh_token'])
-        st.write("Consumer Key:", cid)
-        st.write("Consumer Secret:", cse)
+if 'yahoo_query_instance' not in st.session_state:
+    if st.session_state.get('access_token'):
+        st.write("Now you can use the access token to interact with Yahoo's API.")
+        
+        # Allow user to input league ID
+        league_id = st.text_input("Enter your Yahoo Fantasy Sports league ID:")
+        if league_id:
+            # Debugging print statements
+            st.write("Debugging Info:")
+            st.write("Access Token:", st.session_state['access_token'])
+            st.write("Refresh Token:", st.session_state.get('refresh_token'))
+            st.write("Consumer Key:", cid)
+            st.write("Consumer Secret:", cse)
 
-        if not st.session_state['access_token']:
-            st.error("Access token is missing.")
-        else:
-            st.write("Access Token (Before Initialization):", st.session_state['access_token'])
-            st.write("Attempting to create YahooFantasySportsQuery object")
-            yf_query = YahooFantasySportsQuery(
-                auth_dir=".",
-                league_id=league_id,
-                access_token=st.session_state['access_token'],
-                refresh_token=st.session_state['refresh_token'],
-                consumer_key=cid,
-                consumer_secret=cse
-            )
+            try:
+                st.write("Access Token (Before Initialization):", st.session_state['access_token'])
+                st.write("Attempting to create YahooFantasySportsQuery object")
+                yf_query = YahooFantasySportsQuery(
+                    auth_dir=".",
+                    league_id=league_id,
+                    unique_id=st.session_state['unique_id'],
+                    access_token=st.session_state['access_token'],
+                    refresh_token=st.session_state.get('refresh_token'),
+                    consumer_key=cid,
+                    consumer_secret=cse
+                )
+                st.session_state['yahoo_query_instance'] = yf_query
+            except ValueError as e:
+                st.error(f"Error initializing YahooFantasySportsQuery: {e}")
+    else:
+        st.error("Access token is missing.")
+else:
+    yf_query = st.session_state['yahoo_query_instance']
+    league_settings = yf_query.get_league_settings()
+    st.write("League Settings:", league_settings)
+    cleanup()
 
-        # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
-        # Example: Get league settings
-        st.write("Attempting to create league_settings object...")
-        league_settings = yf_query.get_league_settings()
-        st.write("League Settings:", league_settings)
