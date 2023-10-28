@@ -118,5 +118,5 @@ if st.session_state['access_token']:
             league_settings = yf_query.get_league_settings()
             st.write("League Settings:", league_settings)
             st.write("Done, cleaning up now...")
-            yf_query.cleanup()
+            ## Add function to cleanup() the temp files
             st.write("Done!")
