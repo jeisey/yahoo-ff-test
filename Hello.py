@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import json
+import os
 import tempfile
 from requests.auth import HTTPBasicAuth
 from yfpy.query import YahooFantasySportsQuery
@@ -61,6 +62,7 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
         st.success('Access token received!')
         st.write('Access token:', st.session_state['access_token'])
         st.write('Refresh token:', st.session_state['refresh_token'])
+        st.write('Full token response:', token_data)
     except requests.exceptions.HTTPError as err:
         st.error(f"HTTP error occurred: {err}")
     except Exception as err:
@@ -73,15 +75,14 @@ if st.session_state['access_token']:
     # Allow user to input league ID
     league_id = st.text_input("Enter your Yahoo Fantasy Sports league ID:")
     if league_id:
-        # Create a temporary directory to store the token file
+        # Create a temporary directory to store the token and private files
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Define the path to the token file
-            token_file_path = f"{temp_dir}/token.json"
+            # Define the paths to the token and private files
+            token_file_path = os.path.join(temp_dir, "token.json")
+            private_file_path = os.path.join(temp_dir, "private.json")
 
             # Create the token file with all necessary details
             token_data = {
-                "consumer_key": cid,
-                "consumer_secret": cse,
                 "access_token": st.session_state['access_token'],
                 "refresh_token": st.session_state['refresh_token'],
                 "token_type": "bearer",
@@ -89,6 +90,14 @@ if st.session_state['access_token']:
             }
             with open(token_file_path, 'w') as f:
                 json.dump(token_data, f)
+
+            # Create the private file with consumer key and secret
+            private_data = {
+                "consumer_key": cid,
+                "consumer_secret": cse,
+            }
+            with open(private_file_path, 'w') as f:
+                json.dump(private_data, f)
 
             # Initialize the YahooFantasySportsQuery
             yf_query = YahooFantasySportsQuery(
@@ -99,10 +108,6 @@ if st.session_state['access_token']:
                 consumer_secret=cse
             )
 
-            # Manually set the consumer_key and consumer_secret attributes
-            yf_query.oauth.consumer_key = cid
-            yf_query.oauth.consumer_secret = cse
-
             # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
             # Example: Get league settings
             league_settings = yf_query.get_league_settings()
@@ -110,4 +115,3 @@ if st.session_state['access_token']:
             st.write("Done, cleaning up now...")
             yf_query.cleanup()
             st.write("Done!")
-
