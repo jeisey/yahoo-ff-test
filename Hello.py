@@ -1,8 +1,7 @@
 import streamlit as st
 import requests
 from requests.auth import HTTPBasicAuth
-import os
-import json
+from yfpy.query import YahooFantasySportsQuery
 
 # OAuth2 Flow Yahoo Doc
 # https://developer.yahoo.com/oauth2/guide/flows_authcode/
@@ -26,6 +25,9 @@ if 'auth_code' not in st.session_state:
 
 if 'access_token' not in st.session_state:
     st.session_state['access_token'] = ''
+
+if 'refresh_token' not in st.session_state:
+    st.session_state['refresh_token'] = ''
 
 st.write("1. Click the link below to authenticate with Yahoo and get the authorization code.")
 st.write(f"[Authenticate with Yahoo]({auth_page})")
@@ -53,8 +55,10 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
         r.raise_for_status()  # Will raise an exception for HTTP errors
         token_data = r.json()
         st.session_state['access_token'] = token_data.get('access_token', '')
+        st.session_state['refresh_token'] = token_data.get('refresh_token', '')
         st.success('Access token received!')
         st.write('Access token:', st.session_state['access_token'])
+        st.write('Refresh token:', st.session_state['refresh_token'])
     except requests.exceptions.HTTPError as err:
         st.error(f"HTTP error occurred: {err}")
     except Exception as err:
@@ -62,5 +66,20 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
 
 # Use the access token
 if st.session_state['access_token']:
-    # Add your code here to use the access token and interact with Yahoo's API
     st.write("Now you can use the access token to interact with Yahoo's API.")
+    
+    # Initialize the YahooFantasySportsQuery
+    league_id = "your_league_id"  # Replace with your Yahoo Fantasy Sports league ID
+    yf_query = YahooFantasySportsQuery(
+        auth_dir=".",  # Directory where token.json will be saved
+        league_id=league_id,
+        access_token=st.session_state['access_token'],
+        refresh_token=st.session_state['refresh_token'],
+        consumer_key=cid,
+        consumer_secret=cse
+    )
+
+    # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
+    # Example: Get league settings
+    league_settings = yf_query.get_league_settings()
+    st.write("League Settings:", league_settings)
