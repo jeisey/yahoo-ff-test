@@ -20,7 +20,7 @@ if cid is None or cse is None:
     st.stop()
 
 # URL for st button with Client ID in query string
-redirect_uri = "https://yahoo-ff-test.streamlit.app/" #"oob"  # Out of band
+redirect_uri = "oob" #"oob"  # Out of band # "https://yahoo-ff-test.streamlit.app/" for dev version
 auth_page = f'https://api.login.yahoo.com/oauth2/request_auth?client_id={cid}&redirect_uri={redirect_uri}&response_type=code'
 
 # Show ST Button to open Yahoo OAuth2 Page
