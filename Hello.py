@@ -1,51 +1,64 @@
-# Copyright (c) Streamlit Inc. (2018-2022) Snowflake Inc. (2022)
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import streamlit as st
-from streamlit.logger import get_logger
+import requests
+from requests.auth import HTTPBasicAuth
 
-LOGGER = get_logger(__name__)
+# OAuth2 Flow Yahoo Doc
+# https://developer.yahoo.com/oauth2/guide/flows_authcode/
 
+# Client_ID and Secret from https://developer.yahoo.com/apps/
+cid = st.secrets["YAHOO_CLIENT_ID"]
+cse = st.secrets["YAHOO_CLIENT_SECRET"]
 
-def run():
-    st.set_page_config(
-        page_title="Hello",
-        page_icon="👋",
-    )
+# Ensure that the Client ID and Secret are set
+if cid is None or cse is None:
+    st.error("Client ID or Client Secret is not set. Please set the YAHOO_CLIENT_ID and YAHOO_CLIENT_SECRET environment variables.")
+    st.stop()
 
-    st.write("# Welcome to Streamlit! 👋")
+# URL for st button with Client ID in query string
+redirect_uri = "https://yahoo-ff-test.streamlit.app/"  # Change to your app's callback URL
+auth_page = f'https://api.login.yahoo.com/oauth2/request_auth?client_id={cid}&redirect_uri={redirect_uri}&response_type=code'
 
-    st.sidebar.success("Select a demo above.")
+# Show ST Button to open Yahoo OAuth2 Page
+if 'auth_code' not in st.session_state:
+    st.session_state['auth_code'] = ''
 
-    st.markdown(
-        """
-        Streamlit is an open-source app framework built specifically for
-        Machine Learning and Data Science projects.
-        **👈 Select a demo from the sidebar** to see some examples
-        of what Streamlit can do!
-        ### Want to learn more?
-        - Check out [streamlit.io](https://streamlit.io)
-        - Jump into our [documentation](https://docs.streamlit.io)
-        - Ask a question in our [community
-          forums](https://discuss.streamlit.io)
-        ### See more complex demos
-        - Use a neural net to [analyze the Udacity Self-driving Car Image
-          Dataset](https://github.com/streamlit/demo-self-driving)
-        - Explore a [New York City rideshare dataset](https://github.com/streamlit/demo-uber-nyc-pickups)
-    """
-    )
+if 'access_token' not in st.session_state:
+    st.session_state['access_token'] = ''
 
+if st.button('Auth with Yahoo'):
+    st.session_state['auth_code'] = ''
+    st.session_state['access_token'] = ''
+    st.experimental_rerun()
 
-if __name__ == "__main__":
-    run()
+if st.session_state['auth_code']:
+    st.success('Authorization code received!')
+    st.write(f'Your authorization code is: {st.session_state["auth_code"]}')
+else:
+    st.write("Click the button above to authenticate with Yahoo.")
+    st.write(f"[Authenticate with Yahoo]({auth_page})")
+
+# Get the token
+if st.session_state['auth_code'] and not st.session_state['access_token']:
+    basic = HTTPBasicAuth(cid, cse)
+    _data = {
+        'redirect_uri': redirect_uri,
+        'code': st.session_state['auth_code'],
+        'grant_type': 'authorization_code'
+    }
+
+    try:
+        r = requests.post('https://api.login.yahoo.com/oauth2/get_token', data=_data, auth=basic)
+        r.raise_for_status()  # Will raise an exception for HTTP errors
+        token_data = r.json()
+        st.session_state['access_token'] = token_data.get('access_token', '')
+        st.success('Access token received!')
+        st.write('Access token:', st.session_state['access_token'])
+    except requests.exceptions.HTTPError as err:
+        st.error(f"HTTP error occurred: {err}")
+    except Exception as err:
+        st.error(f"An error occurred: {err}")
+
+# Use the access token
+if st.session_state['access_token']:
+    # Add your code here to use the access token and interact with Yahoo's API
+    st.write("Now you can use the access token to interact with Yahoo's API.")
