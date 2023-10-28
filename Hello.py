@@ -28,7 +28,7 @@ if 'access_token' not in st.session_state:
 if st.button('Auth with Yahoo'):
     st.session_state['auth_code'] = ''
     st.session_state['access_token'] = ''
-    st.experimental_rerun()
+    st.rerun()
 
 if st.session_state['auth_code']:
     st.success('Authorization code received!')
