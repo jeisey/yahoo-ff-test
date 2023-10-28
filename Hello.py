@@ -166,15 +166,17 @@ if st.session_state['access_token']:
         st.write("Consumer Key:", cid)
         st.write("Consumer Secret:", cse)
 
-        # Initialize the YahooFantasySportsQuery
-        yf_query = YahooFantasySportsQuery(
-            auth_dir=".",  # Placeholder value
-            league_id=league_id,
-            access_token=st.session_state['access_token'],
-            refresh_token=st.session_state['refresh_token'],
-            consumer_key=cid,
-            consumer_secret=cse
-        )
+        if not st.session_state['access_token']:
+            st.error("Access token is missing.")
+        else:
+            yf_query = YahooFantasySportsQuery(
+                auth_dir=".",
+                league_id=league_id,
+                access_token=st.session_state['access_token'],
+                refresh_token=st.session_state['refresh_token'],
+                consumer_key=cid,
+                consumer_secret=cse
+            )
 
         # Now you can use yf_query to make queries to Yahoo Fantasy Sports API
         # Example: Get league settings
