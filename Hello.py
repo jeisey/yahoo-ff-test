@@ -60,6 +60,7 @@ if st.session_state['auth_code'] and not st.session_state['access_token']:
         token_data = r.json()
         st.session_state['access_token'] = token_data.get('access_token', '')
         st.session_state['refresh_token'] = token_data.get('refresh_token', '')
+        st.session_state['token_time'] = time.time()
         st.success('Access token received!')
         st.write('Full token response:', token_data)
     except requests.exceptions.HTTPError as err:
@@ -83,12 +84,13 @@ if st.session_state['access_token']:
             # Create the token file with all necessary details
             token_data = {
                 "access_token": st.session_state['access_token'],
-                "refresh_token": st.session_state['refresh_token'],
-                "token_type": "bearer",
-                "expires_in": 3600,  # You might want to handle token expiry properly
                 "consumer_key": cid,
                 "consumer_secret": cse,
                 "guid": None,
+                "refresh_token": st.session_state['refresh_token'],
+                "expires_in": 3600, 
+                "token_time": st.session_state['token_time'],
+                "token_type": "bearer"
                 }
             with open(token_file_path, 'w') as f:
                 json.dump(token_data, f)
